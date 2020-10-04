@@ -5,23 +5,35 @@ zoom: 3,
 }
 var map = new L.map('map', mapOptions); // Creating a map object
 
+// Constant, background world map
+var layer = new L.TileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+// Maps to be selected
+// Include the Wildfire Hazard Potential and the Ongoing Fires maps 
 
 
-// Creating a Layer object
-var layer = new L.TileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
-map.addLayer(layer);  // Adding layer to the map
+// Fire risk
+var fire_risk = L.esri.dynamicMapLayer({
+    url: 'https://maps7.arcgisonline.com/arcgis/rest/services/USDA_USFS_2014_Wildfire_Hazard_Potential/MapServer'
+  });//.addTo(map);
 
-var wmsLayer = L.tileLayer.wms('https://firms2.modaps.eosdis.nasa.gov/wms/key/bc09ff9fa59fca6ebe246d4c2a0538f3/?', {
-    layers: 'fires_modis_24',
+
+// Ongoing fires
+var ongoing_fire_layer = L.tileLayer.wms('https://firms2.modaps.eosdis.nasa.gov/wms/key/bc09ff9fa59fca6ebe246d4c2a0538f3/?', {
+    layers: 'fires_modis_7',
     transparent: true,
     symbols: 'triangle',
     colors: '240+10+10',
-    size: 5,
+    size: 10,
     styles: 'none',
     format: 'image/png'
 
-}).addTo(map);
-map.addLayer(wmsLayer)
+});//.addTo(map);
+
+var overlayMaps = {
+    'Ongoing Fires': L.layerGroup([ongoing_fire_layer]).addTo(map),
+    'Wildfire Hazard Potential': L.layerGroup([fire_risk]).addTo(map)
+}
+L.control.layers({}, overlayMaps, {collapsed: false, autoZIndex: false}).addTo(map);
 
 var drawnItems = new L.FeatureGroup();
 map.addLayer(drawnItems);
